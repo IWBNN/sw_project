@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다중 목표 추적 시스템</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='sw_project_css.css') }}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>다중 목표 추적 시스템</h1>
+    </header>
+    <div class="main-content">
+        <div class="camera-section">
+            <h2>Camera (real time)</h2>
+            <div class="camera-feed">
+                <img src="/video_feed" width="640" height="480" alt="Live Camera Feed">
+            </div>
+
+            <div class="summary-buttons">
+                <button type="button" onclick="filterByTime('morning')">아침 총집계</button>
+                <button type="button" onclick="filterByTime('afternoon')">점심 총집계</button>
+                <button type="button" onclick="filterByTime('evening')">저녁 총집계</button>
+            </div>
+        </div>
+        <div class="data-section">
+            <div class="search-section">
+                <label for="start-date">시작일:</label>
+                <input type="date" id="start-date" name="start-date">
+                <label for="end-date">종료일:</label>
+                <input type="date" id="end-date" name="end-date">
+                <button type="button" onclick="filterData()">검색</button>
+            </div>
+            <h2>Data (Total: <span id="total-count">0</span>)</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Count</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                    </tr>
+                    </thead>
+                    <tbody id="data-list">
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" onclick="goBackToRealtime()">실시간 돌아가기</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function fetchData() {
+        try {
+            const response = await fetch('/face_counts');
+            const data = await response.json();
+            document.getElementById('data-list').innerHTML = '';
+
+            data.forEach(row => {
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${row.date_time}</td>
+                    <td>${row.count}</td>
+                    <td>${row.age}</td>
+                    <td>${row.gender}</td>
+                `;
+                document.getElementById('data-list').appendChild(newRow);
+            });
+
+            document.getElementById('total-count').innerText = data.length;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    function filterByTime(timeOfDay) {
+        // 필터링 로직 구현
+    }
+
+    function filterData() {
+        // 필터링 로직 구현
+    }
+
+    function goBackToRealtime() {
+        alert('미구현');
+    }
+
+    // 주기적으로 데이터 업데이트
+    setInterval(fetchData, 5000);  // 5초마다 데이터 업데이트
+
+    window.onload = fetchData;
+</script>
+</body>
+</html>
