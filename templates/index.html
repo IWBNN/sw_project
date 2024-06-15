@@ -5,93 +5,134 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>다중 목표 추적 시스템</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='sw_project_css.css') }}">
+    <!-- ECharts 라이브러리 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1>다중 목표 추적 시스템</h1>
-    </header>
-    <div class="main-content">
-        <div class="camera-section">
-            <h2>Camera (real time)</h2>
-            <div class="camera-feed">
-                <img src="/video_feed" width="640" height="480" alt="Live Camera Feed">
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>SW_project</h1>
+                <nav class="navbar">
+                    <a href="#">실시간 조회</a>
+                </nav>
             </div>
-
-            <div class="summary-buttons">
-                <button type="button" onclick="filterByTime('morning')">아침 총집계</button>
-                <button type="button" onclick="filterByTime('afternoon')">점심 총집계</button>
-                <button type="button" onclick="filterByTime('evening')">저녁 총집계</button>
+            <div class="header-right">
+                <button type="button" onclick="alert('로그인 기능은 아직 구현되지 않았습니다.')">로그인</button>
+                <button type="button" onclick="alert('로그아웃 기능은 아직 구현되지 않았습니다.')">로그아웃</button>
+            </div>
+        </header>
+        <div class="main-content">
+            <div class="camera-section">
+                <h2>별내역 카메라-1</h2>
+                <div class="camera-feed">
+                    <img src="/video_feed" alt="Camera Feed" />
+                </div>
+            </div>
+            <div class="data-section">
+                <div class="search-section">
+                    <label for="start-date">시작일:</label>
+                    <input type="date" id="start-date" name="start-date">
+                    <label for="end-date">종료일:</label>
+                    <input type="date" id="end-date" name="end-date">
+                    <button type="button" onclick="filterData()">검색</button>
+                </div>
+                <h2>Data (Total: <span id="total-count">0</span>)</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Count</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                            </tr>
+                        </thead>
+                        <tbody id="data-list">
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" onclick="goBackToRealtime()">실시간 조회</button>
             </div>
         </div>
-        <div class="data-section">
-            <div class="search-section">
-                <label for="start-date">시작일:</label>
-                <input type="date" id="start-date" name="start-date">
-                <label for="end-date">종료일:</label>
-                <input type="date" id="end-date" name="end-date">
-                <button type="button" onclick="filterData()">검색</button>
+        <div class="stats-section">
+            <h3>통계 데이터 조회</h3>
+            <div class="stats-buttons">
+                <button type="button" onclick="alert('시간대별 통계는 아직 구현되지 않았습니다.')">시간대별 통계</button>
+                <button type="button" onclick="alert('날짜별 통계는 아직 구현되지 않았습니다.')">날짜별 통계</button>
+                <button type="button" onclick="alert('성별, 나이 통계는 아직 구현되지 않았습니다.')">성별, 나이 통계</button>
             </div>
-            <h2>Data (Total: <span id="total-count">0</span>)</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Count</th>
-                        <th>Age</th>
-                        <th>Gender</th>
-                    </tr>
-                    </thead>
-                    <tbody id="data-list">
-                    </tbody>
-                </table>
-            </div>
-            <button type="button" onclick="goBackToRealtime()">실시간 돌아가기</button>
+            <!-- 그래프를 표시할 영역 추가 -->
+            <div id="chart" style="width: 100%; height: 400px; margin-top: 20px;"></div>
         </div>
     </div>
-</div>
 
-<script>
-    async function fetchData() {
-        try {
-            const response = await fetch('/face_counts');
-            const data = await response.json();
-            document.getElementById('data-list').innerHTML = '';
+    <script>
+        // ECharts를 사용하여 그래프를 그리는 함수
+        function drawChart() {
+            var chartDom = document.getElementById('chart');
+            var myChart = echarts.init(chartDom);
+            var option;
 
-            data.forEach(row => {
-                const newRow = document.createElement('tr');
-                newRow.innerHTML = `
-                    <td>${row.date_time}</td>
-                    <td>${row.count}</td>
-                    <td>${row.age}</td>
-                    <td>${row.gender}</td>
-                `;
-                document.getElementById('data-list').appendChild(newRow);
-            });
+            option = {
+                xAxis: {
+                    type: 'category',
+                    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        data: [120, 200, 150, 80, 70, 110, 130],
+                        type: 'bar'
+                    }
+                ]
+            };
 
-            document.getElementById('total-count').innerText = data.length;
-        } catch (error) {
-            console.error('Error fetching data:', error);
+            option && myChart.setOption(option);
         }
-    }
 
-    function filterByTime(timeOfDay) {
-        // 필터링 로직 구현
-    }
+        // 페이지 로드 시 차트를 그리는 함수 호출
+        window.onload = function() {
+            fetchData();
+            drawChart();
+        };
 
-    function filterData() {
-        // 필터링 로직 구현
-    }
+        async function fetchData() {
+            try {
+                const response = await fetch('/face_counts');
+                const data = await response.json();
+                document.getElementById('data-list').innerHTML = '';
 
-    function goBackToRealtime() {
-        alert('미구현');
-    }
+                data.forEach(row => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>${row.date_time}</td>
+                        <td>${row.count}</td>
+                        <td>${row.age}</td>
+                        <td>${row.gender}</td>
+                    `;
+                    document.getElementById('data-list').appendChild(newRow);
+                });
 
-    // 주기적으로 데이터 업데이트
-    setInterval(fetchData, 5000);  // 5초마다 데이터 업데이트
+                document.getElementById('total-count').innerText = data.length;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
 
-    window.onload = fetchData;
-</script>
+        function filterByTime(timeOfDay) {
+            // 필터링 로직 구현
+        }
+
+        function filterData() {
+            // 필터링 로직 구현
+        }
+
+        function goBackToRealtime() {
+            alert('미구현');
+        }
+    </script>
 </body>
 </html>
