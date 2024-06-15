@@ -17,7 +17,7 @@ db_config = {
 }
 
 # ESP32-CAM의 IP 주소
-STREAM_URL = "http://192.168.45.134:81/stream"
+STREAM_URL = "http://192.168.45.187:81/stream"
 
 # 얼굴 감지 모델 로드
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -41,9 +41,7 @@ def insert_record(connection, count, date_time, age, gender):
 
 def generate():
     connection = create_connection()
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64)'
-                             ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome / 63.0.3239.132 Safari/537.36'}
-    stream = requests.get(STREAM_URL, headers=headers,stream=True)
+    stream = requests.get(STREAM_URL, stream=True)
     byte_data = bytes()
     face_count = 0
     face_detected = False
