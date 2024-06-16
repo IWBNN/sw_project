@@ -1,7 +1,7 @@
 import cv2
 import requests
 import numpy as np
-from flask import Flask, render_template, jsonify, Response
+from flask import Flask, render_template, jsonify, Response, request
 import mysql.connector
 from mysql.connector import Error
 from datetime import datetime
@@ -17,7 +17,7 @@ db_config = {
 }
 
 # ESP32-CAM의 IP 주소
-STREAM_URL = "http://192.168.45.187:81/stream"
+STREAM_URL = "http://192.168.45.85:81/stream"
 
 # 얼굴 감지 모델 로드
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -93,7 +93,20 @@ def get_face_counts():
     try:
         connection = create_connection()
         cursor = connection.cursor()
-        cursor.execute('SELECT date_time, count, age, gender FROM camera_sw1')
+
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        today = request.args.get('today')
+
+        if today:
+            query = "SELECT date_time, count, age, gender FROM camera_sw1 WHERE DATE(date_time) = CURDATE()"
+            cursor.execute(query)
+        elif start_date and end_date:
+            query = "SELECT date_time, count, age, gender FROM camera_sw1 WHERE date_time BETWEEN %s AND %s"
+            cursor.execute(query, (start_date, end_date))
+        else:
+            cursor.execute('SELECT date_time, count, age, gender FROM camera_sw1')
+
         rows = cursor.fetchall()
         cursor.close()
         connection.close()
